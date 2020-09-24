@@ -28,7 +28,6 @@ doslinux.com: doslinux.asm
 
 init/init: init/init.o init/vm86.o init/panic.o init/kbd.o init/term.o
 	$(CC) $(CFLAGS) -o $@ $^
-	$(STRIP) $@
 
 init/%.o: init/%.c init/*.h
 	$(CC) $(CFLAGS) -o $@ -c $<
