@@ -18,7 +18,7 @@
 #include "vm86.h"
 #include "panic.h"
 
-#define CHECKED(expr) { int rc; if ((rc = (expr)) < 0) { goto out; } }
+#define CHECKED(expr) { if ((rc = (expr)) < 0) { goto out; } }
 
 int copy_file(const char* src, const char* dst) {
     int rc, src_fd = -1, dst_fd = -1;
@@ -164,7 +164,7 @@ void initialize() {
         fatal();
     }
 
-    // setup /dev/mem
+    // setup /dev
 
     if (mkdir("/dev", 0755)) {
         perror("mkdir /dev");
@@ -175,36 +175,51 @@ void initialize() {
         perror("mknod mem");
         fatal();
     }
+
+    if (mknod("/dev/ttyS0", S_IFCHR | 0600, makedev(4, 64))) {
+        perror("mknod ttyS0");
+        fatal();
+    }
 }
 
-__attribute__((noreturn)) void exec_shell() {
-    char sh[] = "sh";
-    char* argv[] = { sh, NULL };
-
-    char path[] = "PATH=/usr/bin:/usr/sbin:/bin:/sbin";
-    char* envp[] = { path, NULL };
-    execve("/bin/busybox", argv, envp);
-
-    perror("execve");
-    fatal();
-}
-
-void run_dos() {
+int run_vmm() {
     // open /dev/mem for mapping
     int memfd = open("/dev/mem", O_RDWR | O_SYNC);
     if (memfd < 0) {
         perror("open mem");
-        fatal();
+        return -1;
     }
 
     // map the entire first MiB of memory in :)
     if (mmap(0, 0x110000, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, memfd, 0) == MAP_FAILED) {
         perror("mmap");
-        fatal();
+        return -1;
     }
 
     vm86_init_t* dos = (void*)0x100000;
     vm86_run(*dos);
+}
+
+int run_console() {
+    int rc, fd;
+
+    CHECKED(fd = open("/dev/ttyS0", O_RDWR));
+
+    CHECKED(dup2(fd, 0));
+    CHECKED(dup2(fd, 1));
+    CHECKED(dup2(fd, 2));
+
+    CHECKED(close(fd));
+
+    char sh[] = "sh";
+    char* argv[] = { sh, NULL };
+
+    char path[] = "PATH=/usr/bin:/usr/sbin:/bin:/sbin";
+    char* envp[] = { path, NULL };
+    rc = execve("/bin/busybox", argv, envp);
+
+out:
+    return rc;
 }
 
 int main() {
@@ -212,15 +227,30 @@ int main() {
 
     printf(" ok\n");
 
-    pid_t rc = fork();
+    pid_t rc;
+
+    // fork control shell
+    rc = fork();
 
     if (rc < 0) {
-        perror("fork vm86 proc");
-        fatal();
+        perror("fork");
     }
 
     if (rc == 0) {
-        run_dos();
+        run_console();
+        perror("run console");
+    }
+
+    // fork vmm
+    rc = fork();
+
+    if (rc < 0) {
+        perror("fork");
+    }
+
+    if (rc == 0) {
+        run_vmm();
+        perror("run vmm");
     }
 
     while (1) {
