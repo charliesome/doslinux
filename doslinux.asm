@@ -365,16 +365,16 @@ detect_dsl:
     mov fs, ax
 
     ; save previous handler for doslinux interrupt
-    mov ax, fs:[DOSLINUX_INT * 4]
+    mov ax, [fs:DOSLINUX_INT * 4]
     push ax
-    mov ax, fs:[DOSLINUX_INT * 4 + 2]
+    mov ax, [fs:DOSLINUX_INT * 4 + 2]
     push ax
 
     ; set up dummy interrupt handler so we don't crash or invoke any
     ; unintended behaviour when calling the doslinux interrupt
-    mov fs:[DOSLINUX_INT * 4], word .dummy_handler
+    mov [fs:DOSLINUX_INT * 4], word .dummy_handler
     mov ax, cs
-    mov fs:[DOSLINUX_INT * 4 + 2], ax
+    mov [fs:DOSLINUX_INT * 4 + 2], ax
 
     ; hit it
     xor ax, ax
@@ -383,9 +383,9 @@ detect_dsl:
 
     ; restore previous interrupt handler
     pop ax
-    mov fs:[DOSLINUX_INT * 4 + 2], ax
+    mov [fs:DOSLINUX_INT * 4 + 2], ax
     pop ax
-    mov fs:[DOSLINUX_INT * 4], ax
+    mov [fs:DOSLINUX_INT * 4], ax
 
     ; restore previous fs
     pop fs
