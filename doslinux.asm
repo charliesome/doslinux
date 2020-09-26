@@ -233,8 +233,6 @@ start_linux:
     jmp far [bx]
 
 vm86_return:
-    xchg bx, bx
-
     ; now DSL is running we can run the originally invoked command
     jmp run_command
 
