@@ -183,7 +183,7 @@ int run_vmm() {
     vm86_run(*dos);
 }
 
-int run_console() {
+int exec_console() {
     int rc, fd;
 
     CHECKED(fd = open("/dev/ttyS0", O_RDWR));
@@ -220,8 +220,8 @@ int main() {
     }
 
     if (rc == 0) {
-        run_console();
-        perror("run console");
+        exec_console();
+        fatal("run console");
     }
 
     // fork vmm
