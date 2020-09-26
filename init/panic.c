@@ -4,19 +4,25 @@
 
 #include "panic.h"
 
-__attribute__((noreturn))
-void
-fatal()
+// if init dies the kernel will panic
+__attribute__((noreturn)) void
+halt()
 {
     while (1) {
         sleep(1);
     }
 }
 
-__attribute__((noreturn))
-void
+__attribute__((noreturn)) void
+fatal(const char* msg)
+{
+    perror(msg);
+    halt();
+}
+
+__attribute__((noreturn)) void
 panic(const char* msg)
 {
     printf("panic: %s\n", msg);
-    fatal();
+    halt();
 }

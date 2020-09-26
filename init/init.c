@@ -84,101 +84,84 @@ void initialize() {
     // sync is needed so that linux does not defer disk writes and MS-DOS can
     // see them immediately
     if (mount("", "/", "vfat", MS_REMOUNT | MS_SYNCHRONOUS, NULL)) {
-        perror("remount root");
-        fatal();
+        fatal("remount root");
     }
 
     // setup ramdisk for root partition
     // TODO - maybe a persistent ext4 fs on a loop device?
 
     if (mount("", "/doslinux/rootfs", "ramfs", 0, NULL)) {
-        perror("mount ramfs");
-        fatal();
+        fatal("mount ramfs");
     }
 
     // setup procfs
 
     if (mkdir("/doslinux/rootfs/proc", 0755)) {
-        perror("mkdir /proc");
-        fatal();
+        fatal("mkdir /proc");
     }
 
     if (mount("", "/doslinux/rootfs/proc", "proc", 0, NULL)) {
-        perror("mount /proc");
-        fatal();
+        fatal("mount /proc");
     }
 
     // setup bin and copy busybox into place
 
     if (mkdir("/doslinux/rootfs/bin", 0755)) {
-        perror("mkdir /bin");
-        fatal();
+        fatal("mkdir /bin");
     }
 
     if (copy_file("/doslinux/busybox", "/doslinux/rootfs/bin/busybox")) {
-        perror("copy busybox");
-        fatal();
+        fatal("copy busybox");
     }
 
     // setup mnt and pivot root
 
     if (mkdir("/doslinux/rootfs/mnt", 0755)) {
-        perror("mkdir /mnt");
-        fatal();
+        fatal("mkdir /mnt");
     }
 
     if (mkdir("/doslinux/rootfs/mnt/c", 0755)) {
-        perror("mkdir /mnt/c");
-        fatal();
+        fatal("mkdir /mnt/c");
     }
 
     if (syscall(SYS_pivot_root, "/doslinux/rootfs", "/doslinux/rootfs/mnt/c")) {
-        perror("pivot_root");
-        fatal();
+        fatal("pivot_root");
     }
 
     // setup remaining bin dirs and install busybox
 
     if (mkdir("/sbin", 0755)) {
-        perror("mkdir /sbin");
-        fatal();
+        fatal("mkdir /sbin");
     }
 
     if (mkdir("/usr", 0755)) {
-        perror("mkdir /usr");
-        fatal();
+        fatal("mkdir /usr");
     }
 
     if (mkdir("/usr/bin", 0755)) {
-        perror("mkdir /usr/bin");
-        fatal();
+        fatal("mkdir /usr/bin");
     }
 
     if (mkdir("/usr/sbin", 0755)) {
-        perror("mkdir /usr/sbin");
-        fatal();
+        fatal("mkdir /usr/sbin");
     }
 
     if (install_busybox()) {
-        perror("install busybox");
-        fatal();
+        fatal("install busybox");
     }
 
     // setup /dev
 
     if (mkdir("/dev", 0755)) {
-        perror("mkdir /dev");
-        fatal();
+        fatal("mkdir /dev");
     }
 
     if (mknod("/dev/mem", S_IFCHR | 0600, makedev(1, 1))) {
-        perror("mknod mem");
-        fatal();
+        fatal("mknod mem");
     }
 
     if (mknod("/dev/ttyS0", S_IFCHR | 0600, makedev(4, 64))) {
-        perror("mknod ttyS0");
-        fatal();
+        fatal("mknod ttyS0");
     }
 }
 
@@ -257,8 +240,7 @@ int main() {
         int wstat;
         int rc = wait(&wstat);
         if (rc < 0) {
-            perror("wait");
-            fatal();
+            fatal("wait");
         }
     }
 }

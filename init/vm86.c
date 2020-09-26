@@ -434,7 +434,7 @@ prefix:
             task->regs->cs.word.lo,
             task->regs->eip.word.lo,
             peekip(task->regs, 0));
-        fatal();
+        halt();
     }
 
     panic("unhandled GPF");
@@ -590,8 +590,7 @@ setup_sigio()
     sigemptyset(&sa.sa_mask);
 
     if (sigaction(SIGIO, &sa, NULL)) {
-        perror("sigaction SIGIO");
-        fatal();
+        fatal("sigaction SIGIO");
     }
 }
 

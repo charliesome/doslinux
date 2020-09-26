@@ -33,8 +33,7 @@ void
 term_init()
 {
     if (tcgetattr(STDIN_FILENO, &normal_term)) {
-        perror("tcgetattr");
-        fatal();
+        fatal("tcgetattr");
     }
 
     raw_term = normal_term;
@@ -54,32 +53,27 @@ term_yield_to_dos()
     // get raw scancodes from stdin rather than keycodes or ascii
 
     if (ioctl(STDIN_FILENO, KDSKBMODE, K_RAW)) {
-        perror("set stdin raw mode");
-        fatal();
+        fatal("set stdin raw mode");
     }
 
     // arrange for SIGIO to be raised when input is available
 
     if (fcntl(STDIN_FILENO, F_SETSIG, SIGIO)) {
-        perror("set stdin async signal");
-        fatal();
+        fatal("set stdin async signal");
     }
 
     if (fcntl(STDIN_FILENO, F_SETOWN, getpid())) {
-        perror("set stdin owner");
-        fatal();
+        fatal("set stdin owner");
     }
 
     if (fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK | O_ASYNC)) {
-        perror("set stdin nonblock");
-        fatal();
+        fatal("set stdin nonblock");
     }
 
     // put stdin into raw mode
 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw_term)) {
-        perror("tcsetattr");
-        fatal();
+        fatal("tcsetattr");
     }
 }
 
@@ -89,22 +83,19 @@ term_acquire()
     // select translated keyboard mode
 
     if (ioctl(STDIN_FILENO, KDSKBMODE, K_XLATE)) {
-        perror("set stdin xlate mode");
-        fatal();
+        fatal("set stdin xlate mode");
     }
 
     // disable O_NONBLOCK and O_ASYNC on terminal
 
     if (fcntl(STDIN_FILENO, F_SETFL, 0)) {
-        perror("set stdin normal");
-        fatal();
+        fatal("set stdin normal");
     }
 
     // put stdin into normal mode
 
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &normal_term)) {
-        perror("tcsetattr");
-        fatal();
+        fatal("tcsetattr");
     }
 
     // replicate VGA cursor position in console
