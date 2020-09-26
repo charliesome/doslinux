@@ -4,12 +4,16 @@
 
 #include "panic.h"
 
-// if init dies the kernel will panic
 __attribute__((noreturn)) void
 halt()
 {
-    while (1) {
-        sleep(1);
+    if (getpid() == 1) {
+        // if init dies the kernel will panic
+        while (1) {
+            sleep(1);
+        }
+    } else {
+        exit(EXIT_FAILURE);
     }
 }
 
