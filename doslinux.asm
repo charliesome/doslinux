@@ -423,9 +423,17 @@ cmdline: db "quiet init=/doslinux/init root=/dev/sda1 "
             ; only scrolls in software:
          db "nomodeset no-scroll "
 
+            ; reserve low 640k (the maximum) to keep DOS intact during boot
+         db "reservelow=655360 "
+
             ; mark phys memory from 0x100000-0x110000 as reserved, we may
             ; use high memory area in DOS
          db "memmap=64K$0x100000 "
+
+            ; disable kernel PAT support - PAT imposes aliasing restrictions on
+            ; physical memory pages which cause our mmap of all conventional
+            ; memory to fail
+         db "nopat "
 
          db 0
     .end:
