@@ -417,7 +417,17 @@ initializing db "Starting DOS Subsystem for Linux, please wait...$"
 newline db 13, 10, "$"
 
 ; reserve entire low memory region
-cmdline: db "quiet init=/doslinux/init root=/dev/sda1 nomodeset no-scroll", 0
+cmdline: db "quiet init=/doslinux/init root=/dev/sda1 "
+
+            ; kernel should scroll in software rather than hardware, DOS/BIOS
+            ; only scrolls in software:
+         db "nomodeset no-scroll "
+
+            ; mark phys memory from 0x100000-0x110000 as reserved, we may
+            ; use high memory area in DOS
+         db "memmap=64K$0x100000 "
+
+         db 0
     .end:
 
 gdt:
