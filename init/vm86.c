@@ -171,10 +171,6 @@ is_port_whitelisted(uint16_t port)
 static uint8_t
 do_inb(task_t* task, uint16_t port)
 {
-    if (port >= KBD_PORT_LO && port <= KBD_PORT_HI) {
-        return kbd_read_port(&task->kbd, port);
-    }
-
     uint8_t value = inb(port);
 
     if (!is_port_whitelisted(port)) {
@@ -214,11 +210,6 @@ do_ind(task_t* task, uint16_t port)
 static void
 do_outb(task_t* task, uint16_t port, uint8_t value)
 {
-    if (port >= KBD_PORT_LO && port <= KBD_PORT_HI) {
-        kbd_write_port(&task->kbd, port, value);
-        return;
-    }
-
     if (port == 0x20) {
         // ignore pic writes, they mess with stuff
         return;
@@ -656,7 +647,7 @@ vm86_run(struct vm86_init init_params)
                         kbd_send_input(&task.kbd, scancode);
 
                         // IRQ #1 is ivec 9 - TODO handle PIC remapping
-                        vm86_interrupt(&task, 0x09);
+                        // vm86_interrupt(&task, 0x09);
                     }
                 }
                 break;
@@ -678,7 +669,7 @@ vm86_run(struct vm86_init init_params)
 
                 if (vector == 0x16) {
                     // BIOS keyboard services
-                    do_software_int(&task, VM86_ARG(rc));
+                    kbd_int(&task.kbd, task.regs);
                     break;
                 }
 

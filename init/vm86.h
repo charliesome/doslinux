@@ -7,6 +7,7 @@
 
 #define DOSLINUX_INT 0xe7
 
+#define FLAG_ZERO                   (1 << 6)
 #define FLAG_INTERRUPT              (1 << 9)
 #define FLAG_VM8086                 (1 << 17)
 
